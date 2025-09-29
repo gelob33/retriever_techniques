@@ -72,5 +72,54 @@ def test_connection():
             release_connection(conn)
     
 if __name__ == "__main__":
-    test_connection()
+    #test_connection()
 
+    # get a database connection using pycopg2
+    db_conn = get_connection()
+
+    # create schema, table and index if it does not exists 
+    try:
+        cur = db_conn.cursor()
+
+        #cur.execute("SELECT * FROM pg_extension WHERE extname = 'vector';")
+        #print(cur.fetchall())
+        cur.execute("SET search_path TO public, document;")
+
+        # Create schema
+        cur.execute("CREATE SCHEMA IF NOT EXISTS document;")
+        db_conn.commit()
+
+        # Create table
+        create_table_sql = """
+        CREATE TABLE IF NOT EXISTS document.document_chunk (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            embedding       VECTOR(1536),
+            chunk_text      TEXT,
+            doc_metadata    JSONB,
+            file_name       TEXT,
+            tags            TEXT[],
+            isActive        BOOLEAN,
+            version         TEXT,
+            created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at      TIMESTAMP
+        );
+        """
+        cur.execute(create_table_sql)
+        db_conn.commit()
+
+        # Create index
+        create_index_sql = """
+        CREATE INDEX IF NOT EXISTS documents_embedding_idx
+        ON document.document_chunk USING ivfflat (embedding vector_l2_ops)
+        WITH (lists = 100);
+        """
+        cur.execute(create_index_sql)
+        db_conn.commit()
+
+    except Exception as e:
+        print("Error:", e)
+        db_conn.rollback()
+
+    finally:
+        cur.close()
+        release_connection(db_conn)
