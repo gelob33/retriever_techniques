@@ -13,7 +13,7 @@ DB_URL = "postgresql+asyncpg://postgres:password@localhost:5432/postgres"
 # create db engine
 def get_engine():
     return create_async_engine(DB_URL, 
-                               echo=True,
+                               echo=False, #echo=True,
                                pool_size=10,
                             )
 
@@ -23,7 +23,7 @@ async def get_conn(db_engine):
 
     try:
         conn = await db_engine.connect()
-        logger.info("DB connection opened")
+        #logger.info("DB connection opened")
         yield conn
     # capture query, connection pool timeouts (SQLAlchemyError), 
     # database timeouts errors (asyncio),
@@ -41,7 +41,7 @@ async def get_conn(db_engine):
     finally:
         if conn is not None:
             await conn.close()
-            logger.info("DB connection closed")
+            #logger.info("DB connection closed")
 
 # testing connection
 if __name__ == "__main__":
