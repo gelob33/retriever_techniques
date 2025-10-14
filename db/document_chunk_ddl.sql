@@ -9,7 +9,7 @@ SELECT * FROM pg_available_extensions WHERE name = 'vector';
 -- Create the table
 CREATE TABLE document.document_chunk (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    embedding VECTOR(1536),  -- text embedding adjust dimension to match your model
+    embedding VECTOR(768),  -- text embedding adjust dimension to match your model
     chunk_text TEXT, -- chunk text / clear
     doc_metadata JSONB, -- metadata for the chunk
     file_name TEXT, -- the name of the file
